@@ -1,5 +1,7 @@
 # InfoAnalytics - versión refactorizada
+#____Librerias____
 
+#Instalar openpyxl para nuevos usuarios
 import pickle
 import re
 from collections import Counter
@@ -8,6 +10,7 @@ from langdetect import detect
 import pdfplumber
 import docx
 
+#______Clases_______
 
 class ArchivoBase:
     n_archivos = 0
@@ -31,6 +34,8 @@ class ArchivoBase:
             return ruta[idx:]
         else:
             return ruta
+#Clases de tipo de archivo
+        
 class ArchivoTexto(ArchivoBase):
     def __init__(self, ruta, tag, id=None):
         super().__init__(ruta, tag, id=id)
@@ -96,13 +101,12 @@ class ArchivoDatos(ArchivoBase):
         elif ruta.endswith(".xlsx") or ruta.endswith('.xls'):
             return "xlsx"
         
-    def leer_archivo(self, sheet_name=0):
+    def leer_archivo(self):
         if self.tipo == "csv":
             self.leer_csv()
         elif self.tipo == "xlsx":
-            self.leer_excel(sheet_name=sheet_name)
-        else:
-            raise ValueError("Tipo de archivo no soportado")
+            self.leer_excel()
+
 
     def leer_csv(self):
         try:
@@ -110,22 +114,18 @@ class ArchivoDatos(ArchivoBase):
         except Exception as e:
             print("Error leyendo CSV:", e)
 
-    def leer_excel(self, sheet_name=0):
+    def leer_excel(self):
         try:
-            self.dataframe = pd.read_excel(self.ruta, sheet_name=sheet_name)
+            self.hojas = pd.read_excel(self.ruta, sheet_name=None)
+            primer_nombre = list(self.hojas.keys())[0]
+            self.dataframe = self.hojas[primer_nombre]
+            self.hoja_actual = primer_nombre
+    
         except Exception as e:
             print("Error leyendo Excel:", e)
 
-    def obtener_columnas(self):
-        if self.dataframe is not None:
-            return list(self.dataframe.columns)
-        return []
 
-    def obtener_filas(self, n=5):
-        if self.dataframe is not None:
-            return self.dataframe.head(n)
-        return None
-
+#Clases de tipo de función
 
 class AnalizadorTexto:
     def __init__(self, archivo):
@@ -198,7 +198,98 @@ class AnalizadorTexto:
         }
 
         return mapa.get(codigo, codigo)
+    
+class AnalizadorDatos:
+    def __init__(self, archivo):
+        self.archivo = archivo
+        self.df = archivo.dataframe
+        
+    def cambiar_hoja(self, nombre_hoja):
+        if nombre_hoja in self.archivo.hojas:
+            self.archivo.dataframe = self.archivo.hojas[nombre_hoja]
+            self.archivo.hoja_actual = nombre_hoja
+        else:
+            print("La hoja no existe.")
 
+    
+    def listar_hojas(self):
+        if hasattr(self.archivo, "hojas"):
+            return list(self.archivo.hojas.keys())
+        return []
+
+
+
+    def resumen_general(self):
+        filas, columnas = self.df.shape
+        nulos_totales = self.df.isna().sum().sum()
+
+        return (
+            f"Filas:{filas}\nColumnas:{columnas}\nCeldas Vacias:{nulos_totales}"
+            )
+
+    
+    def porcentaje_uso(self):
+        filas, columnas = self.df.shape
+        total = filas * columnas
+
+        if total == 0:
+            return (
+                "Porcentaje de utilización: 0%\nEl archivo está vacio"
+                )
+
+        nulos = self.df.isna().sum().sum()
+        llenas = total - nulos
+        porcentaje = round((llenas / total) * 100, 2)
+
+        if porcentaje < 30:
+            mensaje = "Tu archivo contiene muchos espacios sin usar."
+        elif porcentaje < 60:
+            mensaje = "Tu archivo tiene una utilización moderada."
+        elif porcentaje < 90:
+            mensaje = "Tu archivo está bien aprovechado."
+        else:
+            mensaje = "Tu archivo tiene excelente utilización."
+
+        return (
+            f"Porcentaje de utilización: {porcentaje}\n{mensaje}"
+            )
+    def datos_numericas(self):
+        if self.df is None:
+            return []
+    
+        resultados = []
+    
+        for col in self.df.columns:
+            serie = pd.to_numeric(self.df[col], errors="coerce")
+    
+            bloque_actual = []
+            bloque_num = 1
+    
+            for valor in serie:
+                if pd.notna(valor):
+                    bloque_actual.append(valor)
+                else:
+                    if bloque_actual:
+                        suma = sum(bloque_actual)
+                        media = suma / len(bloque_actual)
+                        resultados.append(
+                            f"Columna {col} – Lista {bloque_num}:\n"
+                            f"  suma = {suma}\n"
+                            f"  media = {media}\n"
+                        )
+                        bloque_num += 1
+                        bloque_actual = []
+    
+            if bloque_actual:
+                suma = sum(bloque_actual)
+                media = suma / len(bloque_actual)
+                resultados.append(
+                    f"Columna {col} – Lista {bloque_num}:\n"
+                    f"  suma = {suma}\n"
+                    f"  media = {media}\n"
+                )
+    
+        return resultados
 
 class AnalizadorExtra:
     def __init__(self, archivo):
@@ -247,6 +338,8 @@ class VolverMenu(Exception):
 
 
 #______Funciones utiles__________
+
+#Funciones persistencia
 
 def actualizar_contador(archivos):
     if archivos:
@@ -318,6 +411,8 @@ def cargar_archivos(archivo_pickle="archivos_guardados.pkl"):
 
 archivos_cargados = cargar_archivos()
 actualizar_contador(archivos_cargados)
+
+#Funciones Estilo
 
 
 def input_general(mensaje):
@@ -405,11 +500,10 @@ while True:
                     print(f"ID: {id_archivo} | Nombre: {obj.tag} | Ruta: {obj.ruta} | Tipo: {tipo}")
 
         elif n == 3:
-            print(titulo("Reporte de texto"))
             print("Solo aplica para archivos de tipo texto")
 
             n3 = input_num("Ingresa el ID del archivo a analizar: ")
-
+            
             try:
                 archivo_obj = archivos_cargados[n3]
             except KeyError:
@@ -419,6 +513,7 @@ while True:
             if not isinstance(archivo_obj, ArchivoTexto):
                 print("Este tipo de archivo no es compatible con el análisis de texto.")
                 continue
+            print(titulo("Reporte de texto"))
 
             archivo_obj.leer_archivo()
             reporte = AnalizadorTexto(archivo_obj)
@@ -436,7 +531,7 @@ while True:
             print(longitud)
 
         elif n == 4:
-            print(titulo("Reporte de datos"))
+
             n4 = input_num("Ingresa el ID del archivo de datos: ")
             try:
                 archivo_obj = archivos_cargados[n4]
@@ -447,10 +542,35 @@ while True:
             if not isinstance(archivo_obj, ArchivoDatos):
                 print("Este archivo no es de tipo datos.")
                 continue
-
+            print(titulo("Reporte de datos"))
             archivo_obj.leer_archivo()
-            print("Columnas: ", archivo_obj.obtener_columnas())
-            print("Primeras filas:\n", archivo_obj.obtener_filas())
+            reporte = AnalizadorDatos(archivo_obj)
+            if archivo_obj.tipo == "xlsx":
+                hojas = reporte.listar_hojas()
+            if len(hojas) > 1:
+                print("Este archivo tiene múltiples hojas:")
+                for i, h in enumerate(hojas, start=1):
+                    print(f"{i}. {h}")
+                eleccion = input_num("¿Qué hoja deseas analizar? Ingresa el número: ")
+                try:
+                    nombre_hoja = hojas[eleccion - 1]
+                    reporte.cambiar_hoja(nombre_hoja)
+                    print(f"Ahora analizando la hoja: {nombre_hoja}")
+                except:
+                    print("Selección inválida, se usará la primera hoja.\n")
+            general = reporte.resumen_general()
+            utilizacion = reporte.porcentaje_uso()
+            numericas = reporte.datos_numericas()
+            print(general)
+            print(utilizacion)
+            if numericas:
+                print("\nListas numéricas encontradas:\n")
+                for linea in numericas:
+                    print(linea)
+            else:
+                print("No se encontraron listas numéricas en el archivo.")
+
+            
 
         elif n == 5:
             print(titulo("Funciones extra"))
