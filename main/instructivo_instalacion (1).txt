@@ -1,0 +1,19 @@
+Instructivo: Instalación de librerías de Python usando CMD
+
+1.  Verificar instalación de Python:
+
+    -   Abrir CMD: Win + R, escribir ‘cmd’.
+    -   Ejecutar: python –version
+    -   Si no aparece una versión, instalar Python desde
+        https://www.python.org y marcar ‘Add Python to PATH’.
+
+2.  Actualizar pip: python -m pip install –upgrade pip
+
+3.  Instalar librerías: pip install pandas pip install openpyxl pip
+    install langdetect pip install pdfplumber pip install python-docx
+
+4.  Librerías que no requieren instalación: pickle, re,
+    collections.Counter
+
+5.  Verificar instalación: python import pandas import openpyxl from
+    langdetect import detect import pdfplumber import docx exit()
