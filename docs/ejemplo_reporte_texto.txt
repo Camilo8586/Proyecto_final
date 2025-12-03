@@ -1,0 +1,13 @@
+Idioma detectado: Español
+Número de palabras: Número de palabras: 1177
+El porcentaje de uso de signos de puntuación cada 100 palabras es: 10.18
+Muy buen uso de puntuación.
+Palabras más comunes:
+[('de', 73), ('la', 48), ('el', 44), ('y', 43), ('que', 38)]
+
+La densidad léxica del texto es 0.41
+La densidad léxica es la cantidad de palabras únicas en tu texto sobre la cantidad de palabras totales.
+El texto tiene una densidad léxica media.
+
+Las palabras dentro del texto tienen una longitud promedio de 5.02
+El texto tiene un nivel medio, con vocabulario algo más desarrollado.
