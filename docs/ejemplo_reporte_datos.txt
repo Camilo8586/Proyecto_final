@@ -1,0 +1,54 @@
+Filas:13
+Columnas:13
+Celdas Vacias:92
+
+Porcentaje de utilización: 45.56
+Tu archivo tiene una utilización moderada.
+
+
+--- Resumen Estadístico por listas identificadas---
+
+Columna: Unnamed: 2
+  - Mínimo: 0.03
+  - Máximo: 107.2597904
+  - Media: 41.991
+  - Mediana: 6.0
+  - Desviación estándar: 50.453
+
+  Interpretación:
+   • Alta variabilidad en los datos.
+   • Distribución sesgada a la derecha (valores altos influyen la media).
+
+Columna: Unnamed: 5
+  - Mínimo: 0.0
+  - Máximo: 100.0
+  - Media: 40.21
+  - Mediana: 7.5
+  - Desviación estándar: 47.971
+
+  Interpretación:
+   • Alta variabilidad en los datos.
+   • Distribución sesgada a la derecha (valores altos influyen la media).
+
+Columna: Unnamed: 9
+  - Mínimo: 0.02503108319
+  - Máximo: 103.75
+  - Media: 41.605
+  - Mediana: 5.0
+  - Desviación estándar: 50.371
+
+  Interpretación:
+   • Alta variabilidad en los datos.
+   • Distribución sesgada a la derecha (valores altos influyen la media).
+
+Columna: Unnamed: 12
+  - Mínimo: 0.0
+  - Máximo: 100.0
+  - Media: 36.48
+  - Mediana: 22.375
+  - Desviación estándar: 43.147
+
+  Interpretación:
+   • Alta variabilidad en los datos.
+   • Distribución sesgada a la derecha (valores altos influyen la media).
+
